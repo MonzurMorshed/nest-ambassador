@@ -64,8 +64,12 @@ export class AuthController {
     @Get(['admin/user', 'ambassador/user'])
     async user(@Req() request: Request) {
         const cookie = request.cookies['jwt'];
-
-        const resp = await axios.get('http://host.docker.internal:8001/api/user');
+        console.log(cookie);
+        const resp = await axios.get('http://host.docker.internal:8001/api/user',{
+            headers:{
+                'Cookie': `jwt=${cookie}`
+            }
+        });
 
         return resp.data;
 

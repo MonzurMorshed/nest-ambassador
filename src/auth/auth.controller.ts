@@ -69,7 +69,20 @@ export class AuthController {
             }
         });
 
-        return resp.data;
+        try{
+            const cookie = request.cookies['jwt'];
+            console.log(cookie);
+            const resp = await axios.get('http://host.docker.internal:8001/api/user',{
+                headers:{
+                    'Cookie': `jwt=${cookie}`
+                }
+            });
+            return resp.data;
+
+        }catch(e){
+            console.log(e);
+            return e.message;
+        }
 
         // const {id} = await this.jwtService.verifyAsync(cookie);
 

@@ -3,18 +3,16 @@ import {
     Body, ClassSerializerInterceptor,
     Controller,
     Get,
-    NotFoundException,
     Post, Put,
     Req,
-    Res, UnauthorizedException, UseGuards,
+    Res, UseGuards,
     UseInterceptors
 } from '@nestjs/common';
-import {RegisterDto} from "./dtos/register.dto";
-import {UserService} from "../user/user.service";
-import * as bcrypt from 'bcryptjs';
-import {JwtService} from "@nestjs/jwt";
-import {Response, Request} from "express";
-import {AuthGuard} from "./auth.guard";
+import { RegisterDto } from "./dtos/register.dto";
+import { UserService } from "../user/user.service";
+import { JwtService } from "@nestjs/jwt";
+import { Response, Request } from "express";
+import { AuthGuard } from "./auth.guard";
 import axios from 'axios';
 
 @Controller()
@@ -32,9 +30,9 @@ export class AuthController {
         @Body() body: RegisterDto,
         @Req() request: Request
     ) {
-        const response = await axios.post('http://host.docker.internal:8001/api/register',{
+        const response = await axios.post('http://host.docker.internal:8001/api/register', {
             ...body,
-            is_ambassador: request.path === '/api/ambassador/register'                            
+            is_ambassador: request.path === '/api/ambassador/register'
         });
 
         return response.data;
@@ -44,16 +42,16 @@ export class AuthController {
     async login(
         @Body('email') email: string,
         @Body('password') password: string,
-        @Res({passthrough: true}) response: Response,
+        @Res({ passthrough: true }) response: Response,
         @Req() request: Request
     ) {
-        const resp = await axios.post('http://host.docker.internal:8001/api/login',{
+        const resp = await axios.post('http://host.docker.internal:8001/api/login', {
             email,
             password,
-            scope: request.path === '/api/admin/login' ? 'admin' : 'ambassador'                            
+            scope: request.path === '/api/admin/login' ? 'admin' : 'ambassador'
         });
 
-        response.cookie('jwt', resp.data['jwt'], {httpOnly: true});
+        response.cookie('jwt', resp.data['jwt'], { httpOnly: true });
 
         return {
             message: 'success'
@@ -65,8 +63,8 @@ export class AuthController {
     async user(@Req() request: Request) {
         const cookie = request.cookies['jwt'];
         console.log(cookie);
-        const resp = await axios.get('http://host.docker.internal:8001/api/user',{
-            headers:{
+        const resp = await axios.get('http://host.docker.internal:8001/api/user', {
+            headers: {
                 'Cookie': `jwt=${cookie}`
             }
         });
@@ -94,7 +92,18 @@ export class AuthController {
 
     @UseGuards(AuthGuard)
     @Post(['admin/logout', 'ambassador/logout'])
-    async logout(@Res({passthrough: true}) response: Response) {
+    async logout(
+        @Req() request: Request,
+        @Res({ passthrough: true }) response: Response) {
+
+        const cookie = request.cookies['jwt'];
+
+        await axios.post('http://host.docker.internal:8001/api/logout', {}, {
+            headers: {
+                'Cookie': `jwt=${cookie}`
+            }
+        });
+
         response.clearCookie('jwt');
 
         return {
@@ -112,15 +121,17 @@ export class AuthController {
     ) {
         const cookie = request.cookies['jwt'];
 
-        const {id} = await this.jwtService.verifyAsync(cookie);
-
-        await this.userService.update(id, {
+        const resp = await axios.put('http://host.docker.internal:8001/api/users/info', {
             first_name,
             last_name,
             email
-        })
+        }, {
+            headers: {
+                'Cookie': `jwt=${cookie}`
+            }
+        });
 
-        return this.userService.findOne({id});
+        return resp.data;
     }
 
     @UseGuards(AuthGuard)
@@ -136,12 +147,17 @@ export class AuthController {
 
         const cookie = request.cookies['jwt'];
 
-        const {id} = await this.jwtService.verifyAsync(cookie);
+        const { id } = await this.jwtService.verifyAsync(cookie);
 
-        await this.userService.update(id, {
-            password: await bcrypt.hash(password, 12)
+        const resp = await axios.put('http://host.docker.internal:8001/api/users/password', {
+            password,
+            password_confirm
+        }, {
+            headers: {
+                'Cookie': `jwt=${cookie}`
+            }
         });
 
-        return this.userService.findOne({id});
+        return this.userService.findOne({ id });
     }
 }

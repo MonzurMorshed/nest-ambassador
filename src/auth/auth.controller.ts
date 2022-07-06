@@ -6,6 +6,7 @@ import {
     NotFoundException,
     Post, Put,
     Req,
+    Request,
     Res, UnauthorizedException, UseGuards,
     UseInterceptors
 } from '@nestjs/common';
@@ -63,15 +64,21 @@ export class AuthController {
     @UseGuards(AuthGuard)
     @Get(['admin/user', 'ambassador/user'])
     async user(@Req() request: Request) {
-        const cookie = request.cookies['jwt'];
-        console.log(cookie);
-        const resp = await axios.get('http://host.docker.internal:8001/api/user',{
-            headers:{
-                'Cookie': `jwt=${cookie}`
-            }
-        });
 
-        return resp.data;
+        try{
+            const cookie = request.cookies['jwt'];
+            console.log(cookie);
+            const resp = await axios.get('http://host.docker.internal:8001/api/user',{
+                headers:{
+                    'Cookie': `jwt=${cookie}`
+                }
+            });
+            return resp.data;
+
+        }catch(e){
+            console.log(e);
+            return e.message;
+        }
 
         // const {id} = await this.jwtService.verifyAsync(cookie);
 
@@ -95,7 +102,13 @@ export class AuthController {
     @UseGuards(AuthGuard)
     @Post(['admin/logout', 'ambassador/logout'])
     async logout(@Res({passthrough: true}) response: Response) {
-        response.clearCookie('jwt');
+        @Post() request: Request,
+        await axios.post('http://host.docker.internal:8001/api/logout',{
+            headers:{
+                'Cookie': `jwt=${cookie}`
+            }
+        });
+        return resp.data;
 
         return {
             message: 'success'

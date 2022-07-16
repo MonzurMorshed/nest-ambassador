@@ -1,3 +1,4 @@
+import { UserModule } from './../user/user.module';
 import {Module} from '@nestjs/common';
 import {OrderController} from './order.controller';
 import {OrderService} from './order.service';
@@ -19,6 +20,7 @@ import {MailerModule} from "@nestjs-modules/mailer";
         SharedModule,
         LinkModule,
         ProductModule,
+        UserModule,
         StripeModule.forRootAsync({
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => ({

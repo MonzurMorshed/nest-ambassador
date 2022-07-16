@@ -1,11 +1,11 @@
 import {ClassSerializerInterceptor, Controller, Get, Res, UseGuards, UseInterceptors} from '@nestjs/common';
 import {UserService} from "./user.service";
-import {AuthGuard} from "../auth/auth.guard";
+// import {AuthGuard} from "./auth.guard";
 import {User} from "./user";
 import {RedisService} from "../shared/redis.service";
 import {Response} from "express";
 
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard)
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
@@ -18,9 +18,8 @@ export class UserController {
 
     @Get('admin/ambassadors')
     async ambassadors() {
-        return this.userService.find({
-            is_ambassador: true
-        });
+        const users: User[] = await this.userService.get('users',{}); 
+        return users.filter(u => u.is_ambassador);
     }
 
     @Get('ambassador/rankings')

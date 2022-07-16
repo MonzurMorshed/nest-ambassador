@@ -5,23 +5,22 @@ import {
     Get,
     Param,
     Post,
-    Req,
     UseGuards,
     UseInterceptors
 } from '@nestjs/common';
 import {LinkService} from "./link.service";
-import {AuthGuard} from "../auth/auth.guard";
-import {AuthService} from "../auth/auth.service";
+import {AuthGuard} from "../user/auth.guard";
 import {Request} from "express";
 import {Link} from "./link";
 import {Order} from "../order/order";
+import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/user.decorator';
 
 @Controller()
 @UseInterceptors(ClassSerializerInterceptor)
 export class LinkController {
     constructor(
-        private linkService: LinkService,
-        private authService: AuthService
+        private linkService: LinkService
     ) {
     }
 
@@ -34,28 +33,23 @@ export class LinkController {
         });
     }
 
-    @UseGuards(AuthGuard)
     @Post('ambassador/links')
     async create(
         @Body('products') products: number[],
-        @Req() request: Request
+        @User() user,
     ) {
-        const user = await this.authService.user(request);
-
         return this.linkService.save({
             code: Math.random().toString(36).substr(6),
-            user,
+            user_id: user['id'],
             products: products.map(id => ({id}))
         })
     }
 
-    @UseGuards(AuthGuard)
     @Get('ambassador/stats')
-    async stats(@Req() request: Request) {
-        const user = await this.authService.user(request);
-
+    async stats(@User() user) {
+        
         const links: Link[] = await this.linkService.find({
-            user,
+            user_id: user['id'],
             relations: ['orders']
         });
 

@@ -1,17 +1,7 @@
-import {Injectable} from '@nestjs/common';
-import {InjectRepository} from "@nestjs/typeorm";
-import {User} from "./user";
-import {Repository} from "typeorm";
-import {AbstractService} from "../shared/abstract.service";
 import axios, { Method } from 'axios';
 
-@Injectable()
-export class UserService extends AbstractService {
-    constructor(
-        @InjectRepository(User) private readonly userRepository: Repository<User>
-    ) {
-        super(userRepository);
-    }
+export class UserService {
+
 
     baseURL = 'http://host.docker.internal:8001/api';
 
@@ -33,7 +23,7 @@ export class UserService extends AbstractService {
                 data
             });
     
-            return response;
+            return response.data;
         }catch(e){
             return e.response.data;
         }
@@ -45,7 +35,7 @@ export class UserService extends AbstractService {
     }
 
     async put(url, data: any, cookie:string = '' ){
-        return this.request('post',url,data,cookie);
+        return this.request('put',url,data,cookie);
     }
 
     async get(url, data: {}, cookie:string = '' ){

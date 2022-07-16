@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import {ProductService} from "./product.service";
 import {ProductCreateDto} from "./dtos/product-create.dto";
-import {AuthGuard} from "../auth/auth.guard";
+import {AuthGuard} from "../user/auth.guard";
 import {Cache} from "cache-manager";
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Request} from "express";

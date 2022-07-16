@@ -5,11 +5,13 @@ import {TypeOrmModule} from "@nestjs/typeorm";
 import {Product} from "./product";
 import {SharedModule} from "../shared/shared.module";
 import {ProductListener} from "./listeners/product.listener";
+import { UserModule } from '../user/user.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([Product]),
-        SharedModule
+        SharedModule,
+        UserModule
     ],
     controllers: [ProductController],
     providers: [ProductService, ProductListener],

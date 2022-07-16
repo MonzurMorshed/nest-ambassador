@@ -9,7 +9,7 @@ import {
     UseInterceptors
 } from '@nestjs/common';
 import {OrderService} from "./order.service";
-import {AuthGuard} from "../auth/auth.guard";
+import {AuthGuard} from "../user/auth.guard";
 import {CreateOrderDto} from "./dtos/create-order.dto";
 import {LinkService} from "../link/link.service";
 import {Order} from "./order";
@@ -23,9 +23,11 @@ import {InjectStripe} from "nestjs-stripe";
 import Stripe from "stripe";
 import {ConfigService} from "@nestjs/config";
 import {EventEmitter2} from "@nestjs/event-emitter";
+import { UserService } from '../user/user.service';
 
 @Controller()
 export class OrderController {
+    
     constructor(
         private orderService: OrderService,
         private orderItemService: OrderItemService,
@@ -34,8 +36,8 @@ export class OrderController {
         private connection: Connection,
         @InjectStripe() private readonly stripeClient: Stripe,
         private configService: ConfigService,
-        private eventEmitter: EventEmitter2
-    ) {
+        private eventEmitter: EventEmitter2,
+        private userService: UserService    ) {
     }
 
     @UseGuards(AuthGuard)
@@ -58,6 +60,8 @@ export class OrderController {
             throw new BadRequestException('Invalid link!');
         }
 
+        const user = await this.userService.get(`users/${link.user_id}`,{});
+
         const queryRunner = this.connection.createQueryRunner();
 
         try {
@@ -65,8 +69,8 @@ export class OrderController {
             await queryRunner.startTransaction();
 
             const o = new Order();
-            o.user_id = link.user.id;
-            o.ambassador_email = link.user.email;
+            o.user_id = link.user_id;
+            o.ambassador_email = user['email'];
             o.first_name = body.first_name;
             o.last_name = body.last_name;
             o.email = body.email;

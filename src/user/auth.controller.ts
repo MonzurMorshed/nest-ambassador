@@ -33,7 +33,6 @@ export class AuthController {
             ...body,
             is_ambassador: request.path === '/api/ambassador/register'
         });
-
     }
 
     @Post(['admin/login', 'ambassador/login'])

@@ -3,7 +3,7 @@ import axios, { Method } from 'axios';
 export class UserService {
 
 
-    baseURL = 'http://host.docker.internal:8001/api';
+    baseURL = 'http://users-ms:3000/api';
 
     async request(method: Method, url: string, data:{} = {}, cookie:string = '' ){
         let headers = {};
@@ -22,10 +22,11 @@ export class UserService {
                 headers,
                 data
             });
-    
+            console.log(response);
             return response.data;
         }catch(e){
-            return e.response.data;
+            console.log(e.response);
+            return e.response;
         }
 
     }

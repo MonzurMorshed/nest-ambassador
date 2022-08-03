@@ -1,16 +1,11 @@
 import {
     BadRequestException,
     Body,
-    ClassSerializerInterceptor,
     Controller,
-    Get, NotFoundException,
+    NotFoundException,
     Post,
-    UseGuards,
-    UseInterceptors
 } from '@nestjs/common';
 import {OrderService} from "./order.service";
-import {AuthGuard} from "../user/auth.guard";
-import {CreateOrderDto} from "./dtos/create-order.dto";
 import {LinkService} from "../link/link.service";
 import {Order} from "./order";
 import {Link} from "../link/link";
@@ -24,6 +19,7 @@ import Stripe from "stripe";
 import {ConfigService} from "@nestjs/config";
 import {EventEmitter2} from "@nestjs/event-emitter";
 import { UserService } from '../user/user.service';
+import { CreateOrderDto } from './dtos/create-order.dto';
 
 @Controller()
 export class OrderController {
@@ -38,15 +34,6 @@ export class OrderController {
         private configService: ConfigService,
         private eventEmitter: EventEmitter2,
         private userService: UserService    ) {
-    }
-
-    @UseGuards(AuthGuard)
-    @UseInterceptors(ClassSerializerInterceptor)
-    @Get('admin/orders')
-    all() {
-        return this.orderService.find({
-            relations: ['order_items']
-        });
     }
 
     @Post('checkout/orders')

@@ -9,11 +9,8 @@ import {
     UseInterceptors
 } from '@nestjs/common';
 import {LinkService} from "./link.service";
-import {AuthGuard} from "../user/auth.guard";
-import {Request} from "express";
 import {Link} from "./link";
 import {Order} from "../order/order";
-import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/user.decorator';
 
 @Controller()
@@ -22,15 +19,6 @@ export class LinkController {
     constructor(
         private linkService: LinkService
     ) {
-    }
-
-    @UseGuards(AuthGuard)
-    @Get('admin/users/:id/links')
-    async all(@Param('id') id: number) {
-        return this.linkService.find({
-            user: id,
-            relations: ['orders']
-        });
     }
 
     @Post('ambassador/links')
